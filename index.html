@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PashuCare Pro – Livestock AI Assistant</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+</head>
+<body>
+  <header>
+    <h1>PashuCare Pro</h1>
+    <p>Your AI-powered livestock care partner</p>
+    <select id="language-select">
+      <option value="en">English</option>
+      <option value="hi">हिंदी</option>
+      <option value="te">తెలుగు</option>
+    </select>
+  </header>
+
+  <section class="auth">
+    <h2>Sign Up / Login</h2>
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="signup()">Sign Up</button>
+    <button onclick="login()">Login</button>
+    <p id="auth-status"></p>
+  </section>
+
+  <section class="chatbot">
+    <h2 id="chat-header">Talk to PashuCare AI</h2>
+    <textarea id="userInput" rows="3" placeholder="Describe your animal's symptoms..."></textarea>
+    <button onclick="sendMessage()">Send</button>
+    <div id="chatResponse"></div>
+  </section>
+
+  <footer>
+    <p>Made with ❤️ by Prince Joseph & Ray | © 2025</p>
+  </footer>
+
+  <script>
+    // 🌐 Firebase config – Using your provided Web API Key
+    const firebaseConfig = {
+      apiKey: "AIzaSyCJbXN99HczUMmiXamtrEiLMT1XLglbAa0",
+      authDomain: "pashucarepro.firebaseapp.com",
+      projectId: "pashucarepro",
+      storageBucket: "pashucarepro.appspot.com",
+      messagingSenderId: "1234567890",
+      appId: "1:1234567890:web:abc123xyz456"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    function signup() {
+      const email = document.getElementById("email").value;
+      const pass = document.getElementById("password").value;
+      auth.createUserWithEmailAndPassword(email, pass)
+        .then(() => document.getElementById("auth-status").innerText = "Signed up!")
+        .catch(err => document.getElementById("auth-status").innerText = err.message);
+    }
+
+    function login() {
+      const email = document.getElementById("email").value;
+      const pass = document.getElementById("password").value;
+      auth.signInWithEmailAndPassword(email, pass)
+        .then(() => document.getElementById("auth-status").innerText = "Logged in!")
+        .catch(err => document.getElementById("auth-status").innerText = err.message);
+    }
+  </script>
+
+  <script>
+    // 🌍 Language switcher
+    const translations = {
+      hi: {
+        chatHeader: "PashuCare AI से बात करें",
+      },
+      te: {
+        chatHeader: "PashuCare AI తో మాట్లాడండి",
+      },
+      en: {
+        chatHeader: "Talk to PashuCare AI",
+      }
+    };
+
+    document.getElementById("language-select").addEventListener("change", e => {
+      const lang = e.target.value;
+      document.getElementById("chat-header").textContent = translations[lang].chatHeader;
+    });
+  </script>
+
+  <script>
+    // 🤖 AI chatbot using your OpenAI API Key
+    async function sendMessage() {
+      const input = document.getElementById("userInput").value;
+      const lang = document.getElementById("language-select").value;
+      const output = document.getElementById("chatResponse");
+      output.innerHTML = "Thinking...";
+
+      const promptLang = {
+        en: "Reply in English. User said: ",
+        hi: "हिंदी में जवाब दें। उपयोगकर्ता ने कहा: ",
+        te: "తెలుగులో సమాధానం ఇవ్వండి. వినియోగదారుడు చెప్పారు: "
+      };
+
+      const fullPrompt = promptLang[lang] + input;
+
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer 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"
+        },
+        body: JSON.stringify({
+          model: "gpt-3.5-turbo",
+          messages: [{ role: "user", content: fullPrompt }]
+        })
+      });
+
+      const data = await response.json();
+      output.innerHTML = `<p>${data.choices[0].message.content}</p>`;
+    }
+  </script>
+</body>
+</html>
